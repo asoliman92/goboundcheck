@@ -1,4 +1,4 @@
-package slices
+package testslices
 
 func sliceIndexNoCheck() int64 {
 	x := make([]int64, 4, 16)
