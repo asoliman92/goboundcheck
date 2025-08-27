@@ -5,6 +5,7 @@ package analyzer
 import (
 	"go/ast"
 	"go/token"
+	"go/types"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -33,7 +34,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	// Inspect source code depth-first with stack of visited nodes so we can get parent nodes
 	inspector.WithStack(nodeFilter, func(n ast.Node, push bool, stack []ast.Node) bool {
 		// Go through all parents and see if it checks capacity.
-		ident, ok := getIdentForSliceOrArr(n)
+		ident, ok := getIdentForSliceOrArr(n, pass)
 		if !ok {
 			return true
 		}
@@ -62,10 +63,18 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 // getIdentForSliceOrArr takes an index or slice expr node and returns the underlying ident that
 // the expression refers to and true on success, nil and false on failure.
-func getIdentForSliceOrArr(node ast.Node) (*ast.Ident, bool) {
+// It filters out map access to only check slices and arrays.
+func getIdentForSliceOrArr(node ast.Node, pass *analysis.Pass) (*ast.Ident, bool) {
 	switch n := node.(type) {
 	case *ast.IndexExpr:
 		if ident, ok := n.X.(*ast.Ident); ok {
+			// Check if this is a map access by looking at the type
+			if obj := pass.TypesInfo.Uses[ident]; obj != nil {
+				if _, ok := obj.Type().Underlying().(*types.Map); ok {
+					// This is a map access, skip it
+					return nil, false
+				}
+			}
 			return ident, true
 		} else {
 			return nil, false
