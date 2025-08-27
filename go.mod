@@ -1,4 +1,4 @@
-module github.com/morgenm/goboundcheck
+module github.com/asoliman92/goboundcheck
 
 go 1.24
 
