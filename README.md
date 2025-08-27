@@ -1,5 +1,7 @@
 # goboundcheck
 
+NOTE: This is a fork with go1.24 support
+
 **_Go linter that validates all accesses to slices and arrays are bound-checked._**
 
 [![Go](https://github.com/morgenm/goboundcheck/actions/workflows/go.yml/badge.svg)](https://github.com/morgenm/goboundcheck/actions/workflows/go.yml)
